@@ -1,0 +1,169 @@
+@page "/"
+@using src.ApiClient;
+
+<h2>browser balenablock remote control</h2>
+
+<style>
+    .demo-mat-card-content {
+        padding: 2rem;
+    }
+
+    .demo-mat-card-clean-margin {
+        margin: 10px;
+    }
+</style>
+
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell-span-6">
+            <div class="mat-layout-grid-cell">
+                <MatPaper Elevation="4" Rounded="true" class="demo-mat-card-content">
+                    <p>Request</p>
+                    <p>
+                        <MatTextField @bind-Value="@urlValue" OnInput="@OnInputHandler" Label="URL" FullWidth=true>
+                        </MatTextField>
+                    </p>
+                    <p>
+                        <MatChipSet Filter="true" @bind-SelectedChips="selectedOptions">
+                            <MatChip Label="KIOSK" IsCheckable="true"></MatChip>
+                            <MatChip Label="GPU" IsCheckable="true"></MatChip>
+                        </MatChipSet>
+                        <MatButton Outlined="true" OnClick="@Click">@ButtonState</MatButton>
+                    </p>
+
+                    <p>
+                        <MatStringField ReadOnly="true" TextArea="true" @bind-Value="@response" Label="Response" FullWidth=true>
+                        </MatStringField>
+                    </p>
+                </MatPaper>
+            </div>
+        </div>
+        <div class="mat-layout-grid-cell-span-6">
+            <div class="mat-layout-grid-cell">
+                <MatPaper Elevation="4" Rounded="true" class="demo-mat-card-content">
+                    <p>Reported</p>
+                    <p>
+                        <MatTextField @bind-Value="@returnedUrl" Label="URL" Outlined="true" FullWidth=true>
+                        </MatTextField>
+                    </p>
+                    <p>
+                        <MatTextField @bind-Value="@returnedGpu" Label="GPU" Icon="@gpuIcon" Outlined="true">
+                        </MatTextField>
+                    </p>
+                    <p>
+                        <MatTextField @bind-Value="@returnedKiosk" Label="Kiosk Mode" Icon="@kioskIcon" Outlined="true">
+                        </MatTextField>
+                    </p>
+                    <p>
+                        <MatTextField @bind-Value="@returnedVersion" Label="Browser Version" Outlined="true" FullWidth=true>
+                        </MatTextField>
+                    </p>
+                    <p>
+                        Flags:
+                        <MatPaper Elevation="1" Rounded="true" class="demo-mat-card-content">@flags</MatPaper>
+                    </p>
+                    <p>
+                        <MatButton Outlined="true" OnClick="@RefreshClick">Refresh</MatButton>
+                    </p>
+                </MatPaper>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@code
+{
+    private ApiClient client = new ApiClient();
+
+    private string urlValue;
+    private string response = "N/A";
+    private MatChip[] selectedOptions = null;
+    private string ButtonState = "Send";
+    private string returnedVersion = "No set";
+    private string returnedUrl = "";
+    private string returnedGpu = "";
+    private string returnedKiosk = "";
+    private string gpuIcon = "not_listed_location";
+    private string kioskIcon = "not_listed_location";
+    private string flags = "";
+
+    private async Task RefreshClick(MouseEventArgs e)
+    {
+        await GetUrl();
+        await GetGpuStatus();
+        await GetKioskStatus();
+        await GetFlags();
+        await GetVersion();
+    }
+
+    private async Task Click(MouseEventArgs e)
+    {
+        ButtonState = "Sent";
+        string gpu = "0";
+        string kiosk = "0";
+        if (null != selectedOptions)
+        {
+            if (selectedOptions.Length > 0)
+            {
+                gpu = selectedOptions.Count(n => n.Label == "GPU").ToString();
+                kiosk = selectedOptions.Count(n => n.Label == "KIOSK").ToString();
+            }
+        }
+
+        response = await client.Post(urlValue, gpu, kiosk);        
+    }
+
+    private async Task GetVersion()
+    {
+        returnedVersion = await client.GetVersion();
+    }
+
+    private async Task GetUrl()
+    {
+        returnedUrl = await client.GetUrl();
+    }
+
+    private async Task GetFlags()
+    {
+        flags = await client.GetFlags();
+    }
+
+    private async Task GetGpuStatus()
+    {
+        var value = await client.GetGpu();
+        if("1" == value)
+        {
+            returnedGpu = "Enabled";
+            gpuIcon = "done_outline";
+        }
+        else
+        {
+            returnedGpu = "Disabled";
+            gpuIcon = "close";
+        }
+    }
+
+     private async Task GetKioskStatus()
+    {
+        var value = await client.GetKiosk();
+        if("1" == value)
+        {
+            returnedKiosk = "Enabled";
+            kioskIcon = "done_outline";
+        }
+        else
+        {
+            returnedKiosk = "Disabled";
+            kioskIcon = "close";
+        }
+    }
+
+    private void OnInputHandler(ChangeEventArgs e)
+    {
+        this.ButtonState = "Send";
+        this.response = "";
+
+    }
+}
