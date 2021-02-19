@@ -9,9 +9,10 @@ RUN echo "a9e267a24088c793a9cf782455fd344db5fdced714f112a8857c5bfd07179387 20200
 RUN dpkg -i 20200601~deb10u2_all.deb
 RUN dpkg-reconfigure -plow ca-certificates
 
+RUN dotnet build clean
 RUN dotnet restore --runtime %%MICROSOFT_RID%%
 
-#Build and publish project
+# Build and publish project
 RUN dotnet publish -p:PublishSingleFile=true -r %%MICROSOFT_RID%% --self-contained true -p:PublishTrimmed=True  -p:TrimMode=Link  -c Release -o /usr/src/app/publish
 
 FROM balenalib/%%BALENA_MACHINE_NAME%%-alpine as run

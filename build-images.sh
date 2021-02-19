@@ -22,6 +22,7 @@ function build_and_push_image () {
 
   echo "Cleaning up..."
   rm Dockerfile.$BALENA_MACHINE_NAME
+  rm Dockerfile.temp
 }
 
 function retag_and_push_image () {
@@ -36,6 +37,11 @@ function retag_and_push_image () {
   docker push $DOCKER_REPO/browsercontrol:$NEW_TAG
 }
 
+function create_and_push_manifest() {
+  docker manifest create $DOCKER_REPO/browsercontrol:latest --amend $DOCKER_REPO/browsercontrol:raspberrypi4-64 --amend $DOCKER_REPO/browsercontrol:genericx86-64-ext --amend $DOCKER_REPO/browsercontrol:raspberrypi3
+  docker manifest push $DOCKER_REPO/browsercontrol:latest
+}
+
 # YOu can pass in a repo (such as a test docker repo) or accept the default
 # DOCKER_REPO=${1:-balenablocks}
 DOCKER_REPO=${1:-phildwilson}
@@ -46,6 +52,8 @@ DOCKER_REPO=${1:-phildwilson}
 # retag_and_push_image $DOCKER_REPO "raspberrypi3" "fincm3"
 
 #RPI4 is built as ARMv7 because there are currently (jan 2021) no 64-bit chromium sources from RPI
-build_and_push_image $DOCKER_REPO "raspberrypi4-64" "linux/arm64" "linux-musl-arm64"
+# build_and_push_image $DOCKER_REPO "raspberrypi4-64" "linux/arm64" "linux-musl-arm64"
 
 build_and_push_image $DOCKER_REPO "genericx86-64-ext" "linux/amd64" "linux-musl-x64"
+
+create_and_push_manifest

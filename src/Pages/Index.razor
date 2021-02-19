@@ -13,6 +13,8 @@
     }
 </style>
 
+<MatTextField @bind-Value="@hostValue" Label="browser block ip address" FullWidth=true></MatTextField>
+
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
         <div class="mat-layout-grid-cell-span-6">
@@ -28,12 +30,20 @@
                             <MatChip Label="KIOSK" IsCheckable="true"></MatChip>
                             <MatChip Label="GPU" IsCheckable="true"></MatChip>
                         </MatChipSet>
-                        <MatButton Outlined="true" OnClick="@Click">@ButtonState</MatButton>
+                        <MatButton Outlined="true" OnClick="@Click">@ButtonState</MatButton>  <MatCaption>@lastSent</MatCaption>
                     </p>
-
                     <p>
                         <MatStringField ReadOnly="true" TextArea="true" @bind-Value="@response" Label="Response" FullWidth=true>
                         </MatStringField>
+                        
+                    </p>
+
+                    
+                </MatPaper>
+                <p></p>
+                <MatPaper Elevation="4" Rounded="true" class="demo-mat-card-content">
+                    <p>
+                        <MatStringField ReadOnly="true" Label="Automatic Refresh Interval" @bind-Value="@setInterval" FullWidth=false></MatStringField><MatSlider Discrete="true" Pin="true" TValue="int" ValueMin="0" ValueMax="60" ValueChanged="@RefreshChanged"></MatSlider>
                     </p>
                 </MatPaper>
             </div>
@@ -63,7 +73,7 @@
                         <MatPaper Elevation="1" Rounded="true" class="demo-mat-card-content">@flags</MatPaper>
                     </p>
                     <p>
-                        <MatButton Outlined="true" OnClick="@RefreshClick">Refresh</MatButton>
+                        <MatButton Outlined="true" OnClick="@RefreshClick">Refresh</MatButton>  <MatCaption>@lastRecieved</MatCaption>
                     </p>
                 </MatPaper>
             </div>
@@ -78,6 +88,7 @@
     private ApiClient client = new ApiClient();
 
     private string urlValue;
+    private string hostValue;
     private string response = "N/A";
     private MatChip[] selectedOptions = null;
     private string ButtonState = "Send";
@@ -88,6 +99,15 @@
     private string gpuIcon = "not_listed_location";
     private string kioskIcon = "not_listed_location";
     private string flags = "";
+    private DateTime? lastSent = null;
+    private DateTime? lastRecieved = null;
+    private String setInterval = "0";
+
+    private async Task RefreshChanged(int val)
+    {
+        await client.SetRefreshInterval(hostValue, val);
+        setInterval = val.ToString();
+    }
 
     private async Task RefreshClick(MouseEventArgs e)
     {
@@ -96,6 +116,7 @@
         await GetKioskStatus();
         await GetFlags();
         await GetVersion();
+        lastRecieved = DateTime.UtcNow;
     }
 
     private async Task Click(MouseEventArgs e)
@@ -112,27 +133,28 @@
             }
         }
 
-        response = await client.Post(urlValue, gpu, kiosk);        
+        response = await client.Post(hostValue, urlValue, gpu, kiosk);
+        lastSent = DateTime.UtcNow;    
     }
 
     private async Task GetVersion()
     {
-        returnedVersion = await client.GetVersion();
+        returnedVersion = await client.GetVersion(hostValue);
     }
 
     private async Task GetUrl()
     {
-        returnedUrl = await client.GetUrl();
+        returnedUrl = await client.GetUrl(hostValue);
     }
 
     private async Task GetFlags()
     {
-        flags = await client.GetFlags();
+        flags = await client.GetFlags(hostValue);
     }
 
     private async Task GetGpuStatus()
     {
-        var value = await client.GetGpu();
+        var value = await client.GetGpu(hostValue);
         if("1" == value)
         {
             returnedGpu = "Enabled";
@@ -147,7 +169,7 @@
 
      private async Task GetKioskStatus()
     {
-        var value = await client.GetKiosk();
+        var value = await client.GetKiosk(hostValue);
         if("1" == value)
         {
             returnedKiosk = "Enabled";
