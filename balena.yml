@@ -1,6 +1,5 @@
 name: browsercontrol
-description: >-
-  A remote control for the balenablocks/browser block.
+description: A remote control for the balenablocks/browser block.
 type: sw.application
 assets:
   repository:
@@ -10,7 +9,8 @@ assets:
   logo:
     type: blob.asset
     data:
-      url: 'https://raw.githubusercontent.com/balenablocks/browsercontrol/master/logo.png'
+      url: >-
+        https://raw.githubusercontent.com/balenablocks/browsercontrol/master/logo.png
 data:
   defaultDeviceType: raspberrypi4-64
   supportedDeviceTypes:
@@ -21,3 +21,4 @@ data:
     - raspberrypi400-64
     - intel-nuc
     - genericx86-64-ext
+version: 0.0.2
