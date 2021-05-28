@@ -8,7 +8,7 @@ A remote control webApp for the balenablocks/browser block. Simply point it at y
 Add this service to your docker-compose file:
 
 ```yaml
-webapp:
+browsercontrol:
     image: balenablocks/browsercontrol
     restart: always
     network_mode: host
