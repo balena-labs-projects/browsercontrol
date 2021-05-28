@@ -10,7 +10,7 @@ RUN dpkg -i 20200601~deb10u2_all.deb
 RUN dpkg-reconfigure -plow ca-certificates
 
 RUN dotnet build clean
-RUN dotnet restore --runtime %%MICROSOFT_RID%%
+RUN dotnet restore --runtime %%MICROSOFT_RID%% ./src/src.proj
 
 # Build and publish project
 RUN dotnet publish -p:PublishSingleFile=true -r %%MICROSOFT_RID%% --self-contained true -p:PublishTrimmed=True  -p:TrimMode=Link  -c Release -o /usr/src/app/publish
