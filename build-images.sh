@@ -38,22 +38,19 @@ function retag_and_push_image () {
 }
 
 function create_and_push_manifest() {
-  docker manifest create $DOCKER_REPO/browsercontrol:latest --amend $DOCKER_REPO/browsercontrol:raspberrypi4-64 --amend $DOCKER_REPO/browsercontrol:genericx86-64-ext --amend $DOCKER_REPO/browsercontrol:raspberrypi3
+  docker pull $DOCKER_REPO/browsercontrol:raspberrypi3
+  docker manifest rm $DOCKER_REPO/browsercontrol:latest
+  docker manifest create $DOCKER_REPO/browsercontrol:latest --amend $DOCKER_REPO/browsercontrol:genericx86-64-ext --amend $DOCKER_REPO/browsercontrol:raspberrypi4-64  --amend $DOCKER_REPO/browsercontrol:raspberrypi3
   docker manifest push $DOCKER_REPO/browsercontrol:latest
 }
 
-# YOu can pass in a repo (such as a test docker repo) or accept the default
-# DOCKER_REPO=${1:-balenablocks}
-DOCKER_REPO=${1:-phildwilson}
+# You can pass in a repo (such as a test docker repo) or accept the default
+DOCKER_REPO=${1:-balenablocks}
 
-#only need to build once per arch, and retag & push for clones
-# build_and_push_image $DOCKER_REPO "raspberrypi3" "linux/arm/v7" "linux-musl-arm64"
-# retag_and_push_image $DOCKER_REPO "raspberrypi3" "raspberrypi3-64"
-# retag_and_push_image $DOCKER_REPO "raspberrypi3" "fincm3"
+# Have to manually build raspberrypi3 image on a pi - due to some dotnet docker limitation:
+# https://github.com/dotnet/dotnet-docker/issues/1537
 
-#RPI4 is built as ARMv7 because there are currently (jan 2021) no 64-bit chromium sources from RPI
-# build_and_push_image $DOCKER_REPO "raspberrypi4-64" "linux/arm64" "linux-musl-arm64"
-
+build_and_push_image $DOCKER_REPO "raspberrypi4-64" "linux/arm64" "linux-musl-arm64"
 build_and_push_image $DOCKER_REPO "genericx86-64-ext" "linux/amd64" "linux-musl-x64"
 
 create_and_push_manifest
