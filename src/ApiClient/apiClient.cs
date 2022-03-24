@@ -9,7 +9,7 @@ namespace src.ApiClient
     public class ApiClient
     {
         private readonly HttpClient client = new HttpClient();
-        private String port = Environment.GetEnvironmentVariable("RUN_DASHBOARD") ?? "5011";
+        private String port = Environment.GetEnvironmentVariable("PORT") ?? "5011";
 
         public async Task<String> Post(String host, String url, string gpu, string kiosk)
         {
