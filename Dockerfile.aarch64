@@ -1,4 +1,4 @@
-FROM balenalib/%%BALENA_MACHINE_NAME%%-debian-dotnet:5.0-sdk-buster-build as build
+FROM balenalib/generic-aarch64-debian-dotnet:5.0-sdk-buster-build as build
 
 WORKDIR /usr/src/app
 COPY ./* /usr/src/app/
@@ -9,7 +9,7 @@ RUN dotnet restore --runtime linux-musl-arm64
 # Build and publish project
 RUN dotnet publish -p:PublishSingleFile=true -r linux-musl-arm64 --self-contained true -p:PublishTrimmed=True  -p:TrimMode=Link  -c Release -o /usr/src/app/publish
 
-FROM balenalib/%%BALENA_MACHINE_NAME%%-alpine as run
+FROM balenalib/generic-aarch64-alpine as run
 
 RUN install_packages ca-certificates \
         krb5-libs \
