@@ -1,0 +1,33 @@
+FROM balenalib/generic-debian-dotnet:5.0-sdk-buster-build as build
+
+WORKDIR /usr/src/app
+COPY ./* /usr/src/app/
+COPY ./src/wwwroot .
+
+RUN dotnet restore --runtime linux-musl
+
+# Build and publish project
+RUN dotnet publish -p:PublishSingleFile=true -r linux-musl --self-contained true -p:PublishTrimmed=True  -p:TrimMode=Link  -c Release -o /usr/src/app/publish
+
+FROM balenalib/generic-alpine as run
+
+RUN install_packages ca-certificates \
+        krb5-libs \
+        libgcc \
+        libintl \
+        libssl1.1 \
+        libstdc++ \
+        zlib
+
+ENV UDEV=1
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT 1
+ENV ASPNETCORE_URLS=http://+:80
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+
+WORKDIR /app
+COPY --from=build /usr/src/app/publish .
+COPY ./start.sh .
+RUN chmod +x start.sh
+
+# Start app
+CMD ["bash", "start.sh"]
