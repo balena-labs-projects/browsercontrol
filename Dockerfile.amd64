@@ -4,10 +4,10 @@ WORKDIR /usr/src/app
 COPY ./* /usr/src/app/
 COPY ./src/wwwroot .
 
-RUN dotnet restore --runtime linux-musl
+RUN dotnet restore --runtime linux-musl-x64
 
 # Build and publish project
-RUN dotnet publish -p:PublishSingleFile=true -r linux-musl --self-contained true -p:PublishTrimmed=True  -p:TrimMode=Link  -c Release -o /usr/src/app/publish
+RUN dotnet publish -p:PublishSingleFile=true -r linux-musl-x64 --self-contained true -p:PublishTrimmed=True  -p:TrimMode=Link  -c Release -o /usr/src/app/publish
 
 FROM balenalib/generic-alpine as run
 
