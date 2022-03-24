@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-echo "running"
-
-# read -p "Press enter to continue"
+echo "Running browsercontrol version: $(<VERSION)"
 
 ./src
