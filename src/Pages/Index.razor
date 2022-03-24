@@ -1,7 +1,7 @@
 @page "/"
 @using src.ApiClient;
 
-<h2>browser balenablock remote control</h2>
+<h2>@title</h2>
 
 <style>
     .demo-mat-card-content {
@@ -13,10 +13,14 @@
     }
 </style>
 
-<MatTextField @bind-Value="@hostValue" Label="browser block ip address" FullWidth=true></MatTextField>
-
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell-span-6">
+            <MatTextField @bind-Value="@hostValue" Label="browser ip address" FullWidth=true></MatTextField>
+        </div>
+        <div class="mat-layout-grid-cell-span-6">
+            <MatTextField @bind-Value="@portValue" Label="browser API port" FullWidth=true></MatTextField>
+        </div>
         <div class="mat-layout-grid-cell-span-6">
             <div class="mat-layout-grid-cell">
                 <MatPaper Elevation="4" Rounded="true" class="demo-mat-card-content">
@@ -30,7 +34,7 @@
                             <MatChip Label="KIOSK" IsCheckable="true"></MatChip>
                             <MatChip Label="GPU" IsCheckable="true"></MatChip>
                         </MatChipSet>
-                        <MatButton Outlined="true" OnClick="@Click">@ButtonState</MatButton>  <MatCaption>@lastSent</MatCaption>
+                        <MatButton Outlined="true" OnClick="@Click">SEND</MatButton>  <MatCaption>Last sent: @lastSent</MatCaption>
                     </p>
                     <p>
                         <MatStringField ReadOnly="true" TextArea="true" @bind-Value="@response" Label="Response" FullWidth=true>
@@ -43,7 +47,7 @@
                 <p></p>
                 <MatPaper Elevation="4" Rounded="true" class="demo-mat-card-content">
                     <p>
-                        <MatStringField ReadOnly="true" Label="Automatic Refresh Interval" @bind-Value="@setInterval" FullWidth=false></MatStringField><MatSlider Discrete="true" Pin="true" TValue="int" ValueMin="0" ValueMax="60" ValueChanged="@RefreshChanged"></MatSlider>
+                        <MatStringField ReadOnly="true" Label="Automatic Page Refresh" @bind-Value="@setInterval" FullWidth=false>seconds</MatStringField><MatSlider Discrete="true" Pin="true" TValue="int" ValueMin="10" ValueMax="360" ValueChanged="@RefreshChanged"></MatSlider>
                     </p>
                 </MatPaper>
             </div>
@@ -88,7 +92,9 @@
     private ApiClient client = new ApiClient();
 
     private string urlValue;
-    private string hostValue;
+    private string hostValue = "127.0.0.1";
+
+    private string portValue = "5011";
     private string response = "N/A";
     private MatChip[] selectedOptions = null;
     private string ButtonState = "Send";
@@ -103,6 +109,42 @@
     private DateTime? lastRecieved = null;
     private String setInterval = "0";
 
+    private String title = "Browser Control";
+
+    protected override void OnInitialized()
+
+    {
+
+        title = Environment.GetEnvironmentVariable("TITLE") ?? "Browser Control";
+        portValue = Environment.GetEnvironmentVariable("PORT") ?? "5011";
+        hostValue = Environment.GetEnvironmentVariable("IP") ?? "127.0.0.1";
+
+    }
+
+
+
+    @* protected override async Task OnInitializedAsync()
+
+    {
+
+        try
+
+        {
+
+
+        }
+
+        catch (Exception ex)
+
+        {
+
+            Console.WriteLine(ex);
+
+        }
+
+    } *@
+
+
     private async Task RefreshChanged(int val)
     {
         await client.SetRefreshInterval(hostValue, val);
@@ -110,6 +152,11 @@
     }
 
     private async Task RefreshClick(MouseEventArgs e)
+    {
+        await Referesh();
+    }
+
+    private async Task Referesh()
     {
         await GetUrl();
         await GetGpuStatus();
@@ -134,7 +181,9 @@
         }
 
         response = await client.Post(hostValue, urlValue, gpu, kiosk);
-        lastSent = DateTime.UtcNow;    
+        lastSent = DateTime.UtcNow;
+
+        await Referesh();    
     }
 
     private async Task GetVersion()

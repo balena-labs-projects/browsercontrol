@@ -1,4 +1,5 @@
 name: browsercontrol
+version: 1.0.0
 description: >-
   A remote control for the balenablocks/browser block.
 type: sw.application
