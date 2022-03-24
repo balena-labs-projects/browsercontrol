@@ -28,6 +28,7 @@ WORKDIR /app
 COPY --from=build /usr/src/app/publish .
 COPY ./start.sh .
 RUN chmod +x start.sh
+COPY VERSION .
 
 # Start app
 CMD ["bash", "start.sh"]
